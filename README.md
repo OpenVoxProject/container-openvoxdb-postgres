@@ -73,7 +73,8 @@ podman-compose logs -f openvoxdb-postgres
 Check the installed extensions and application role:
 
 ```sh
-podman-compose exec openvoxdb-postgres sh -c 'PGPASSWORD="$OPENVOX_PASSWORD" psql -h 127.0.0.1 -U "$OPENVOX_USER" -d "$OPENVOX_DATABASE" -c "\dx" -c "SELECT current_user, rolsuper FROM pg_roles WHERE rolname = current_user;"'
+podman-compose exec openvoxdb-postgres \
+  sh -c 'PGPASSWORD="$OPENVOX_PASSWORD" psql -h 127.0.0.1 -U "$OPENVOX_USER" -d "$OPENVOX_DATABASE" -c "\dx" -c "SELECT current_user, rolsuper FROM pg_roles WHERE rolname = current_user;"'
 ```
 
 The output should include `pg_trgm`, `pgcrypto`, and `rolsuper = f` for `puppetdb`.
