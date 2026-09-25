@@ -1,0 +1,28 @@
+---
+.github/workflows/build_container.yml:
+  matrix_command: yq -o=json build_platforms.yaml | jq -c
+  matrix_requires_yq: true
+  publish_runner: '${{ matrix.runner }}'
+  publish_build_job_name: 'Build PostgreSQL (${{ matrix.platform }})'
+  publish_build_arch: 'linux/${{ matrix.platform }}'
+  publish_tags:
+    - 'ghcr.io/openvoxproject/openvoxdb-postgres:sha-${{ github.sha }}-${{ matrix.platform }}'
+  publish_manifest_steps:
+    - name: Create ref-specific multi-architecture manifests
+      commands:
+        - >-
+          docker buildx imagetools create
+          -t ghcr.io/openvoxproject/openvoxdb-postgres:${{ github.ref_name }}
+          -t docker.io/voxpupuli/openvoxdb-postgres:${{ github.ref_name }}
+          ghcr.io/openvoxproject/openvoxdb-postgres:sha-${{ github.sha }}-amd64
+          ghcr.io/openvoxproject/openvoxdb-postgres:sha-${{ github.sha }}-arm64
+    - name: Update latest multi-architecture manifests
+      if: "github.ref == 'refs/heads/main'"
+      commands:
+        - >-
+          docker buildx imagetools create
+          -t ghcr.io/openvoxproject/openvoxdb-postgres:latest
+          -t docker.io/voxpupuli/openvoxdb-postgres:latest
+          ghcr.io/openvoxproject/openvoxdb-postgres:sha-${{ github.sha }}-amd64
+          ghcr.io/openvoxproject/openvoxdb-postgres:sha-${{ github.sha }}-arm64
+  dockerhub_repository: voxpupuli/openvoxdb-postgres
