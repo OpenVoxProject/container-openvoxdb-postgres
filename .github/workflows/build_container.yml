@@ -1,0 +1,42 @@
+---
+# Managed by modulesync - DO NOT EDIT
+# https://voxpupuli.org/docs/updating-files-managed-with-modulesync/
+
+name: 📦 Build and Publish
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  workflow_dispatch:
+
+concurrency:
+  group: build-and-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push-container:
+    name: Build and publish container
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build and publish container
+        id: build
+        uses: voxpupuli/gha-build-and-publish-a-container@f1680271a3fd34267c1401c760a15f45a9cf34ca # v2.0.0
+        with:
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          build_arch: linux/amd64,linux/arm64
+          build_context: .
+          buildfile: Containerfile
+          tags: |
